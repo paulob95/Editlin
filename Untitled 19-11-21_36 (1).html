@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+
+<style id="webmakerstyle">
+*{margin:0;padding:0;box-sizing:border-box}body{height:100vh;display:flex;align-items:center;justify-content:center;background-color:#000}main{width:500px;height:540px;background-color:red;padding:30px;border-radius:30px;box-shadow:0 1px 2px}header{display:flex;align-items:center;justify-content:space-between}button{padding:10px;cursor:pointer;background-color:#ff0;border:1px solid #ccc;border-radius:20px;cursor:pointer;color:#000}.img-content{max-height:300px;width:100%;height:100%;margin:10px 0;background-color:#eee;overflow:hidden}.img-content img{width:100%;height:100%;object-fit:contain}footer{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}.rotate-content i{font-size:18px}.filters-content .active{font-weight:700}input[type=range]{appearance:none;width:100%}input[type=range]::-webkit-slider-runnable-track{height:12.8px;background:#6dbdee;border-radius:50px}input[type=range]::-webkit-slider-thumb{height:20px;width:39px;border-radius:50px;background:#0081CF;cursor:pointer;appearance:none;margin-top:-3.6px}
+
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit/lin</title>
+
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+  <main>
+    <header>
+      <div>
+        <button id="btnResetFilters" style="background:#0081CF; color: white;">Limpar Filtros</button>
+      </div>
+      <div>
+        <button id="newImg" style="background: #0081CF; color:white;">Nova Imagem</button>
+        <button id="btnSalvar" style="background: #0081CF; color: white;">Salvar</button>
+      </div>
+    </header>
+    <div class="img-content">
+      <input type="file" accept="image/*" style="display: none;">
+      <img src="img/default.png" alt="" />
+    </div>
+    <footer>
+      <div class="rotate-content">
+        <button onclick="handleDirection('rotateRight')"><i class='bx bx-rotate-right'></i></button>
+        <button onclick="handleDirection('rotateLeft')"><i class='bx bx-rotate-left'></i></i></button>
+        <button onclick="handleDirection('reflectY')"><i class='bx bx-reflect-vertical' ></i></button>
+        <button onclick="handleDirection('reflectX')"><i class='bx bx-reflect-horizontal'></i></button>
+      </div>
+      <span id="spnRangeValue"></span>
+      <input type="range" style="width: 80%;" />
+      <div class="filters-content">
+        <button id="filterDefault" class="active">Brilho</button>
+        <button>Contraste</button>
+        <button>Saturação</button>
+        <button>Cinza</button>
+        <button>Inversão</button>
+      </div>
+    </footer>
+  </main>
+  
+  <script src="script.js"></script>
+</body>
+</html>
+
+
+<script>
+const newImg = document.getElementById("newImg");
+const inputFile = document.querySelector("input[type=file]");
+const img = document.querySelector(".img-content img");
+const ButtonsFilter = document.querySelectorAll(".filters-content button");
+const range = document.querySelector("input[type=range]");
+const spnRangeValue = document.getElementById("spnRangeValue");
+const btnResetFilters = document.getElementById("btnResetFilters");
+const btnSalvar = document.getElementById("btnSalvar");
+
+let rotate;
+let flipY;
+let flipX;
+
+let filterActive;
+
+let filters;
+
+btnResetFilters.onclick = () => init();
+
+init();
+
+function init() {
+  filters = {
+    Brilho: { value: 100, max: 200 },
+    Contraste: { value: 100, max: 200 },
+    Saturação: { value: 100, max: 200 },
+    Cinza: { value: 0, max: 100 },
+    Inversão: { value: 0, max: 100 },
+  };
+
+  rotate = 0;
+  flipY = 1;
+  flipX = 1;
+
+  filterActive = "Brilho";
+
+  spnRangeValue.innerHTML = 100;
+  range.max = 200;
+  range.value = 100;
+
+  img.style.transform = "";
+  img.style.filter = "";
+
+  document.querySelector(".active").classList.remove("active");
+  document.getElementById("filterDefault").classList.add("active");
+}
+
+ButtonsFilter.forEach((item) => {
+  item.onclick = () => {
+    document.querySelector(".active").classList.remove("active");
+
+    item.classList.add("active");
+
+    filterActive = item.innerHTML;
+
+    range.max = filters[filterActive].max;
+    range.value = filters[filterActive].value;
+
+    spnRangeValue.innerHTML = range.value;
+  };
+});
+
+newImg.onclick = () => inputFile.click();
+
+inputFile.onchange = () => loadNewImage();
+
+function loadNewImage() {
+  let file = inputFile.files[0];
+
+  if (file) {
+    img.src = URL.createObjectURL(file);
+  }
+
+  init();
+}
+
+range.oninput = () => {
+  filters[filterActive].value = range.value;
+  spnRangeValue.innerHTML = range.value;
+
+  img.style.filter = `
+    brightness(${filters["Brilho"].value}%) 
+    contrast(${filters["Contraste"].value}%) 
+    saturate(${filters["Saturação"].value}%) 
+    grayscale(${filters["Cinza"].value}%) 
+    invert(${filters["Inversão"].value}%)
+  `;
+};
+
+function handleDirection(type) {
+  if (type === "rotateRight") {
+    rotate += 90;
+  } else if (type === "rotateLeft") {
+    rotate -= 90;
+  } else if (type === "reflectY") {
+    flipY = flipY === 1 ? -1 : 1;
+  } else {
+    flipX = flipX === 1 ? -1 : 1;
+  }
+
+  img.style.transform = `rotate(${rotate}deg) scale(${flipY}, ${flipX})`;
+}
+
+btnSalvar.onclick = () => download();
+
+function download() {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+
+  ctx.filter = `
+    brightness(${filters["Brilho"].value}%) 
+    contrast(${filters["Contraste"].value}%) 
+    saturate(${filters["Saturação"].value}%) 
+    grayscale(${filters["Cinza"].value}%) 
+    invert(${filters["Inversão"].value}%)
+  `;
+
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  if (rotate !== 0) ctx.rotate((rotate * Math.PI) / 180);
+
+  ctx.scale(flipY, flipX);
+  ctx.drawImage(
+    img,
+    -canvas.width / 2,
+    -canvas.height / 2,
+    canvas.width,
+    canvas.height
+  );
+
+  const link = document.createElement("a");
+  link.download = "foto_editada.png";
+  link.href = canvas.toDataURL();
+  link.click();
+}
+  
+
+
+
+  
+
+//# sourceURL=userscript.js
+</script>
+</body>
+</html>
